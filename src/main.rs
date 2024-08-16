@@ -1,17 +1,36 @@
 use std::io::Cursor;
 use reqwest::Error;
 use polars::prelude::*;
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+# [command(version)]
+# [command(about = "A CLI-Tool for Querying Data from the ECB's Public API")]
+struct  CliArgs {
+    /// Data Series Key from ECB Website
+    #[arg(long)]
+    series_key: String,
+    /// Starting Point matching Date Time format of Series Key
+    #[arg(long)]
+    start_period: Option<String>,
+    /// Ending Point matching Date Time format of Series Key
+    #[arg(long)]
+    end_period: Option<String>,
+    /// File Format, Options: "CSV", "JSON",
+    #[arg(long, default_value = "CSV")]
+    file_format: String,
+}
 
 const ENTRYPOINT: &str = "https://data-api.ecb.europa.eu";
 
 fn construct_request_url(
-    series_key: &str,
-    start_period: Option<&str>,
-    end_period: Option<&str>,
-    detail: Option<&str>,
-    updated_after: Option<&str>,
-    first_n_observations: Option<&str>,
-    last_n_observations: Option<&str>,
+    series_key: String,
+    start_period: Option<String>,
+    end_period: Option<String>,
+    detail: Option<String>,
+    updated_after: Option<String>,
+    first_n_observations: Option<String>,
+    last_n_observations: Option<String>,
     include_history: bool,
 ) -> String {
     let (db, ticker) = series_key.split_once('.').unwrap();
@@ -52,18 +71,11 @@ fn construct_request_url(
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // Define the base URL for the ECB API
-    // let base_url = "https://data-api.ecb.europa.eu/service/data/";
+    let args = CliArgs::parse();
 
-    let series_key = "ILM.M.U2.C.L020200.U2.EUR";
-    //let series_key = "ICP.M.DE.N.000000.4.INX";
+    println!("Given Params: {:#?}", args);
 
-    // let format_type = "?format=csvdata";
-
-    let start_period = Some("2007-01");
-    let end_period = Some("2022-12");
-
-    let url = construct_request_url(series_key, start_period, end_period, None, None, None, None, false);
+    let url = construct_request_url(args.series_key, args.start_period, args.end_period, None, None, None, None, false);
     println!("Full Request: {}", &url);
 
     // Make the HTTP GET request

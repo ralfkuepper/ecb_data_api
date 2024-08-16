@@ -1,0 +1,6 @@
+example_0:
+  params:
+    series_key: "ILM.M.U2.C.L020200.U2.EUR"
+    start_period: "2007-01"
+    end_period: "2022-12"
+  command: "target/debug/ecb_data_api --series-key ILM.M.U2.C.L020200.U2.EUR --start-period 2007-01 --end-period 2022-12"
