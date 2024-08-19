@@ -1,11 +1,13 @@
 use log::{info, error};
+use std::fs::File;
 use std::io::Cursor;
 use std::env;
 use reqwest::Error;
 use polars::prelude::*;
 use clap::Parser;
+use chrono::Local;
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 # [command(version)]
 # [command(about = "A CLI-Tool for Querying Data from the ECB's Public API")]
 struct  CliArgs {
@@ -21,7 +23,7 @@ struct  CliArgs {
     /// Detail Level of Query Reponse, Options: "full", "dataonly", "serieskeysonly", "nodata"
     #[arg(long)]
     detail: Option<String>,
-    /// File Format, Options: "CSV", "JSON", "XLSX"
+    /// File Format, Options: "CSV", "JSON"
     #[arg(long, default_value = "CSV")]
     file_format: String,
 }
@@ -74,6 +76,20 @@ fn construct_request_url(
     url
 }
 
+fn save_dataframe(df: &mut DataFrame, series_key: String, file_format: String) -> Result<(), PolarsError> {
+    // TODO match statement depending on file_format
+    // option 1: CSV
+    // option 2: JSON
+    
+    let datetime = Local::now().format("%Y-%m-%d_%H:%M:%S");
+    let path = format!("{}_{}.{}", datetime, series_key, file_format.to_lowercase());
+    let file = File::create(path).unwrap();
+    CsvWriter::new(file)
+        .with_separator(b";"[0]) // separator must be as Byte not String
+        .finish(df)
+    // JsonWriter::new(file).finish(df);
+}
+
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -83,6 +99,7 @@ async fn main() -> Result<(), Error> {
 
     // read CLI args
     let args = CliArgs::parse();
+    let args1 = args.clone();
 
     info!("Given Params: {:#?}", args);
 
@@ -97,13 +114,16 @@ async fn main() -> Result<(), Error> {
         info!("Request successful!");
 
         let csv_raw: String  = response.text().await?;
-        let csv_df = CsvReader::new(
+        let mut csv_df = CsvReader::new(
             Cursor::new(csv_raw))
             .infer_schema(None)
             .has_header(true)
-            .finish();
+            .finish()
+            .unwrap()
+            ;
 
-        println!("{:?}", csv_df);
+        println!("{:?}", &csv_df);
+        let _ = save_dataframe(&mut csv_df, args1.series_key, args1.file_format);
         
     } else {
         error!("Failed to fetch data: {}", response.status());

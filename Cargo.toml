@@ -12,3 +12,4 @@ polars = { version = "0.34.0", features = ["csv", "json"] }
 clap = { version = "4.1", features = ["derive"] }
 log = "0.4"
 env_logger = "0.9"
+chrono = "0.4.37"
