@@ -18,6 +18,9 @@ struct  CliArgs {
     /// Ending Point matching Date Time format of Series Key
     #[arg(long)]
     end_period: Option<String>,
+    /// Detail Level of Query Reponse, Options: "full", "dataonly", "serieskeysonly", "nodata"
+    #[arg(long)]
+    detail: Option<String>,
     /// File Format, Options: "CSV", "JSON", "XLSX"
     #[arg(long, default_value = "CSV")]
     file_format: String,
@@ -48,6 +51,7 @@ fn construct_request_url(
     }
 
     if let Some(dtl) = detail {
+        // TODO: match on enum Detail
         url.push_str(&format!("&detail={}", dtl));
     }
 
@@ -82,7 +86,7 @@ async fn main() -> Result<(), Error> {
 
     info!("Given Params: {:#?}", args);
 
-    let url = construct_request_url(args.series_key, args.start_period, args.end_period, None, None, None, None, false);
+    let url = construct_request_url(args.series_key, args.start_period, args.end_period, args.detail, None, None, None, false);
     info!("Full Request: {}", &url);
 
     // make the HTTP GET request
