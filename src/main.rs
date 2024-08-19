@@ -1,4 +1,6 @@
+use log::{info, error};
 use std::io::Cursor;
+use std::env;
 use reqwest::Error;
 use polars::prelude::*;
 use clap::Parser;
@@ -16,7 +18,7 @@ struct  CliArgs {
     /// Ending Point matching Date Time format of Series Key
     #[arg(long)]
     end_period: Option<String>,
-    /// File Format, Options: "CSV", "JSON",
+    /// File Format, Options: "CSV", "JSON", "XLSX"
     #[arg(long, default_value = "CSV")]
     file_format: String,
 }
@@ -71,18 +73,25 @@ fn construct_request_url(
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    // initialize logger
+    if env::var("RUST_LOG").is_err() { env::set_var("RUST_LOG", "info") }
+    env_logger::init();
+
+    // read CLI args
     let args = CliArgs::parse();
 
-    println!("Given Params: {:#?}", args);
+    info!("Given Params: {:#?}", args);
 
     let url = construct_request_url(args.series_key, args.start_period, args.end_period, None, None, None, None, false);
-    println!("Full Request: {}", &url);
+    info!("Full Request: {}", &url);
 
-    // Make the HTTP GET request
+    // make the HTTP GET request
     let response = reqwest::get(&url).await?;
 
-    // Check if the response is successful
+    // check if the response is successful
     if response.status().is_success() {
+        info!("Request successful!");
+
         let csv_raw: String  = response.text().await?;
         let csv_df = CsvReader::new(
             Cursor::new(csv_raw))
@@ -93,7 +102,7 @@ async fn main() -> Result<(), Error> {
         println!("{:?}", csv_df);
         
     } else {
-        println!("Failed to fetch data: {}", response.status());
+        error!("Failed to fetch data: {}", response.status());
     }
 
     Ok(())
