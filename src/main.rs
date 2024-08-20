@@ -81,13 +81,31 @@ fn save_dataframe(df: &mut DataFrame, series_key: String, file_format: String) -
     // option 1: CSV
     // option 2: JSON
     
-    let datetime = Local::now().format("%Y-%m-%d_%H:%M:%S");
+    let datetime = Local::now().format("%Y-%m-%d_%H-%M-%S");
     let path = format!("{}_{}.{}", datetime, series_key, file_format.to_lowercase());
-    let file = File::create(path).unwrap();
-    CsvWriter::new(file)
-        .with_separator(b";"[0]) // separator must be as Byte not String
-        .finish(df)
-    // JsonWriter::new(file).finish(df);
+
+    match file_format.to_lowercase().as_str() {
+        "csv" => {
+            let file = File::create(path).unwrap();
+            CsvWriter::new(file)
+                .with_separator(b';') // separator must be as Byte not String
+                .finish(df)
+        },
+        "json" => {
+            let file = File::create(path).unwrap();
+            JsonWriter::new(file)
+                .with_json_format(JsonFormat::Json)
+                .finish(df)
+        },
+        _ => {
+            let err = Err(PolarsError::ComputeError(
+                format!("Unsupported file format: {}", file_format).into(), 
+            ));
+            error!("Unsupported file format: {}", file_format);
+            err
+        },
+     }
+    
 }
 
 
