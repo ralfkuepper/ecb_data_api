@@ -4,7 +4,7 @@
 ## About 
 This CLI-tool allows for easy and fast downloading of data from the European Central Bank's [Data Portal](https://data.ecb.europa.eu/help/data/overview).
 
-The tool aims at simplifying the usage of the [official API interface](https://data.ecb.europa.eu/help/api/data) (on which it is built). The official interface requires to collect all parameters into a single URL string, which is error-prone if done manually. Instead the parameters can be given as argument to the CLI-tool and the appropriate query is build for the user.
+The tool aims at simplifying the usage of the [official API interface](https://data.ecb.europa.eu/help/api/data) (on which it is built). The official interface requires to collect all parameters into a single URL string, which is error-prone if done manually. Instead the parameters can be given as argument to the CLI-tool and the appropriate query will be build for the user.
 
 ## Installation
 Download the compiled binary from the target directory matching your OS and system archicture.
@@ -58,6 +58,10 @@ This project is ongoing and more features will be added. The
     * JSONL ✔
     * XLS
     * XLSX
-* documentation
-* proper error handling and logging
+* include compiled binaries
+    * Windows (`x86_64-pc-windows-msvc`)
+    * Linux (`x86_64-unknown-linux-gnu`)
+    * Apple (`x86_64-apple-darwin`)
+* write detailed documentation on usage
+* implement proper error handling and logging
 
