@@ -7,12 +7,13 @@ This CLI-tool allows for easy and fast downloading of data from the European Cen
 The tool aims at simplifying the usage of the [official API interface](https://data.ecb.europa.eu/help/api/data) (on which it is built). The official interface requires to collect all parameters into a single URL string, which is error-prone if done manually. Instead the parameters can be given as argument to the CLI-tool and the appropriate query will be build for the user.
 
 ## Installation
-Download the compiled binary from the target directory matching your OS and system archicture.
+Download the compiled binary from the target directory matching your OS and system archicture (_curently not available but planned_).
 
 If your OS is not included, clone this repository and use the Rust compiler to build for your OS and system.
 
 ```
-git clone <url>
+git clone https://github.com/tom-walter/ecb_data_api.git
+cargo build --release
 ```
 
 ## Usage
