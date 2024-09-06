@@ -12,7 +12,7 @@ use chrono::Local;
 # [command(about = "A CLI-Tool for Querying Data from the ECB's Public API")]
 struct  CliArgs {
     /// Data Series Key from ECB Website
-    #[arg(long)]
+    #[arg(long, short = 'k' )]
     series_key: String,
     /// Starting Point matching Date Time format of Series Key
     #[arg(long)]
@@ -23,7 +23,7 @@ struct  CliArgs {
     /// Detail Level of Query Reponse, Options: "full", "dataonly", "serieskeysonly", "nodata"
     #[arg(long)]
     detail: Option<String>,
-    /// File Format, Options: "CSV", "JSON"
+    /// File Format, Options: "CSV", "JSON", "JSONL"
     #[arg(long, default_value = "CSV")]
     file_format: String,
 }
@@ -54,7 +54,7 @@ fn construct_request_url(
 
     if let Some(dtl) = detail {
         // TODO: match on enum Detail
-        url.push_str(&format!("&detail={}", dtl));
+        url.push_str(&format!("&detail={}", dtl.to_lowercase()));
     }
 
     if let Some(updated) = updated_after {
@@ -97,6 +97,12 @@ fn save_dataframe(df: &mut DataFrame, series_key: String, file_format: String) -
                 .with_json_format(JsonFormat::Json)
                 .finish(df)
         },
+        "jsonl" => {
+            let file = File::create(path).unwrap();
+            JsonWriter::new(file)
+                .with_json_format(JsonFormat::JsonLines)
+                .finish(df)
+        }
         _ => {
             let err = Err(PolarsError::ComputeError(
                 format!("Unsupported file format: {}", file_format).into(), 
@@ -142,6 +148,7 @@ async fn main() -> Result<(), Error> {
 
         println!("{:?}", &csv_df);
         let _ = save_dataframe(&mut csv_df, args1.series_key, args1.file_format);
+        info!("Saved to file.")
         
     } else {
         error!("Failed to fetch data: {}", response.status());
